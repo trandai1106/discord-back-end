@@ -11,6 +11,17 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('a user connected');
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+  
+  socket.on('chat-message', ({ sender, msg }) => {
+    io.emit('chat-message', { sender, msg });
+  });
+
+  // This will emit the event to all connected sockets
+  io.emit('some event', { someProperty: 'some value', otherProperty: 'other value' }); 
 });
 
 server.listen(3000, () => {
