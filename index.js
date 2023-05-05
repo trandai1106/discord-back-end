@@ -1,29 +1,30 @@
-const express = require('express');
-const app = express();
-const http = require('http');
+var express = require('express')
+const http = require("http");
+var app = express();
 const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
-
-io.on('connection', (socket) => {
-  console.log('a user connected');
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
-  
-  socket.on('chat-message', ({ sender, msg }) => {
-    io.emit('chat-message', { sender, msg });
+const socketIo = require("socket.io")(server, {
+    cors: {
+        origin: "*",
+    }
   });
 
-  // This will emit the event to all connected sockets
-  io.emit('some event', { someProperty: 'some value', otherProperty: 'other value' }); 
+
+socketIo.on("connection", (socket) => {
+  console.log("New client connected" + socket.id);
+
+  socket.emit("getId", socket.id);
+
+  socket.on("sendDataClient", function(data) {
+    console.log(data)
+    socketIo.emit("sendDataServer", { data });
+  })
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
 });
 
 server.listen(3000, () => {
-  console.log('listening on port 3000');
+    console.log('Server đang chay tren cong 3000');
 });
