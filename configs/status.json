@@ -1,0 +1,16 @@
+{
+    "FAIL": 0,
+    "SUCCESS": 1,
+    "TOKEN_ERROR": 2,
+    "TOKEN_EXPIRED": 403,
+    "REFRESH_TOKEN_NULL": 498,
+    "DATA_NOT_FOUND": 3,
+    "SERVER_ERROR": 4,
+    "TOKEN_EMPTY":5,
+    "OVER_OTP": -1,
+    "NOT_UP_CUSTOMER": -2,
+    "NOT_UP_OTP": -3,
+    "SMS_OTP_FAIL": -4,
+    "WRONG_OTP":-5,
+    "SESSION_CONFLICT": -6
+}

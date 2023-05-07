@@ -1,30 +1,54 @@
-var express = require('express')
+require('dotenv').config();
+const express = require('express');
 const http = require("http");
-var app = express();
+const mongoose = require('mongoose');
+const cors = require("cors");
+const bodyParser = require('body-parser');  
+const multer = require('multer');
+
+const testRouter = require('./routers/test');
+const authRouter = require('./routers/auth');
+const { toNamespacedPath } = require('path');
+const socket = require('./utils/socket.js');
+
+const upload = multer();
+const app = express();
+
+//#region CORS
+const corsOptions = {
+  methods: ["GET", "PUT", "POST", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+};
+app.use(cors(corsOptions));
+//#endregion
+
+//#region Parse request data
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
+
+// for parsing multipart/form-data
+app.use(upload.array()); 
+app.use(express.static('public'));
+//#endregion
+
+//#region Database connection
+mongoose.set('strictQuery', true);
+mongoose.connect(process.env.DB_URI, null).then(() => { console.log("Mongodb is connected"); });
+//#endregion
+
 const server = http.createServer(app);
 
-const socketIo = require("socket.io")(server, {
-    cors: {
-        origin: "*",
-    }
-  });
+//#region SocketIO
+socket.init(server);
+//#endregion
 
+app.use('/test', testRouter);
+app.use('/auth', authRouter);
 
-socketIo.on("connection", (socket) => {
-  console.log("New client connected" + socket.id);
-
-  socket.emit("getId", socket.id);
-
-  socket.on("sendDataClient", function(data) {
-    console.log(data)
-    socketIo.emit("sendDataServer", { data });
-  })
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
-
-server.listen(3000, () => {
-    console.log('Server đang chay tren cong 3000');
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+    console.log('Server is running on port ' + PORT);
 });
