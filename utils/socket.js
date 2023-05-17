@@ -1,6 +1,8 @@
 require('dotenv').config();
 const socketIO = require('socket.io');
 const Notification = require('../models/notification');
+const User = require('../models/user');
+const { verifyAccessToken } = require('../utils/security');
 
 const socket = (() => {
     var io;
@@ -22,9 +24,20 @@ const socket = (() => {
 
                 socket.emit('set-socket-id', socket.id);
                 
-                socket.on("client-send-data", function(data) {
-                    console.log(socket.id + ' says: ' + data.content + ' '  +data.id);
-                    io.emit("server-send-data", data);
+                socket.on("client-send-data", async function(data) {
+
+                    var user = await authenticate(data.access_token);
+                    if (user) {
+                        console.log('user: ' + user.name + ", socket id: " + socket.id + ', content: ' + data.content);
+                        io.emit("server-send-data", {
+                            sender_id: user._id,
+                            content: data.content,
+                            socket_id: socket.id
+                        });
+                    }
+                    else {
+                        console.log("Cannot authenticate");
+                    }
                 });
 
                 socket.on("disconnect", async () => {
@@ -52,5 +65,22 @@ const socket = (() => {
         }
     }
 })();
+
+const authenticate = async (token) => {
+    var decodedToken = verifyAccessToken(token);
+
+    if (decodedToken.status == 403) {
+        return null;
+    }
+    else if (decodedToken.status == 200) {
+        const userExist = await User.exists({ name: decodedToken.data.name });
+        if (userExist) {
+            const user = await User.findOne({ name: decodedToken.data.name });
+            return user;
+        } else {
+            return null;
+        }
+    }
+};
 
 module.exports = socket
