@@ -6,6 +6,7 @@ const cors = require("cors");
 const bodyParser = require('body-parser');
 const multer = require('multer');
 
+const testRouter = require('./routers/test');
 const roomRouter = require('./routers/room');
 const authRouter = require('./routers/auth');
 const directMessageRouter = require('./routers/directMessage');
@@ -46,7 +47,6 @@ const server = http.createServer(app);
 //#region SocketIO
 socket.init(server);
 //#endregion
-
 app.use('/auth', authRouter);
 app.use('/chat/direct-message', directMessageRouter);
 app.use('/users', userRouter);
