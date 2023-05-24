@@ -57,10 +57,17 @@ route.post('/register', async (req, res) => {
       }
       
       const encrypted_password = await security.encryptPassword(password);
-      await User.create({ name, encrypted_password });
+      const user = await User.create({ name, encrypted_password });
+      const newAT = security.generateAccessToken(user);
+      const newRT = security.generateRefreshToken(user);
       return res.send({
         status: 1,
-        message: 'OK'
+        message: 'OK',
+        data: {
+          access_token: newAT,
+          refresh_token: newRT,
+          id: user._id
+        }
       })
     }
     else {
