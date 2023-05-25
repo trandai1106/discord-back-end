@@ -39,15 +39,36 @@ const socket = (() => {
                     }
                 });
 
-                socket.on("client-send-data", async function (data) {
-
+                socket.on("c_directMessage", async function (data) {
+                    console.log(data);
                     var user = await authenticate(data.access_token);
                     if (user) {
-                        io.emit("server-send-data", {
-                            sender_id: user._id,
-                            content: data.content,
-                            socket_id: socket.id
-                        });
+                        var pair = pairIDs.find(pair => pair.id == data.to_id);
+
+                        if (pair == null) {
+                            console.log("Receiver is not online");
+                        }
+                        else {
+                            pair.socketIDs.forEach(socketID => {
+                                io.to(socketID).emit("s_directMessage", {
+                                    from_id: data.from_id,
+                                    to_id: data.to_id,
+                                    content: data.content
+                                });
+                            });
+                        }
+
+                        var receiver = await User.findById(data.to_id);
+                        if (receiver != null) {
+                            await DirectMessage.create({
+                                from_id: user._id,
+                                to_id: data.to_id,
+                                message: data.content,
+                            })
+                        }
+                        else {
+                            console.log("Cannot find receiver");
+                        }
                     }
                     else {
                         console.log("Cannot authenticate");
@@ -96,7 +117,7 @@ const socket = (() => {
 
 const authenticate = async (token) => {
     var decodedToken = verifyAccessToken(token);
-
+    console.log(decodedToken.status);
     if (decodedToken.status == 403) {
         return null;
     }
