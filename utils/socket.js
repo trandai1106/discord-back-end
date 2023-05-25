@@ -2,11 +2,12 @@ require('dotenv').config();
 const socketIO = require('socket.io');
 const Notification = require('../models/notification');
 const User = require('../models/user');
+const DirectMessage = require('../models/directMessage');
 const { verifyAccessToken } = require('../utils/security');
 
 const socket = (() => {
     var io;
-    var users = [];
+    var pairIDs = [];
     return {
         init: function (server) {
             io = socketIO(server, {
@@ -16,19 +17,32 @@ const socket = (() => {
             });
 
             io.sockets.on('connection', function (socket) {
-                console.log("User connect - ID: " + socket.id);
-                if (!users.includes(socket.id)) {
-                    users.push(socket.id);
-                    console.log(users.length + " users: " + " - " + users);
-                }
+                socket.on("c_pairID", async function (data) {
+                    console.log("User connect - ID: " + data.id + " - SocketID: " + socket.id);
 
-                socket.emit('set-socket-id', socket.id);
-                
-                socket.on("client-send-data", async function(data) {
+                    var user = await authenticate(data.access_token);
+
+                    if (user) {
+                        var usePairID = pairIDs.find(pair => pair.id == data.id);
+                        if (usePairID == null) {
+                            pairIDs.push({ id: data.id, socketIDs: [socket.id] });
+                        }
+                        else {
+                            usePairID.socketIDs.push(socket.id);
+                        }
+                        
+                        console.log("-------------New update-------------");
+                        console.log(pairIDs);
+                    }
+                    else {
+                        console.log("Cannot authenticate");
+                    }
+                });
+
+                socket.on("client-send-data", async function (data) {
 
                     var user = await authenticate(data.access_token);
                     if (user) {
-                        console.log('user: ' + user.name + ", socket id: " + socket.id + ', content: ' + data.content);
                         io.emit("server-send-data", {
                             sender_id: user._id,
                             content: data.content,
@@ -41,12 +55,26 @@ const socket = (() => {
                 });
 
                 socket.on("disconnect", async () => {
-                    console.log("User disconnect - ID: " + socket.id);
-                    const index = users.findIndex(id => id == socket.id);
-                    if (index != -1) {
-                        users.splice(index, 1);
-                        console.log(users.length + " users: " + " - " + users);
+                    console.log("User disconnect - SocketID: " + socket.id);
+
+                    var usePairID = pairIDs.find(pair => pair.socketIDs.includes(socket.id));
+                    if (usePairID == null) {
+                        console.log("Error: Cannot find socket ID");
                     }
+                    else {
+                        var index = usePairID.socketIDs.indexOf(socket.id);
+                        if (index > -1) { // only splice array when item is found
+                            usePairID.socketIDs.splice(index, 1); // 2nd parameter means remove one item only
+                        }
+                        if (usePairID.socketIDs.length == 0) {
+                            index = pairIDs.indexOf(usePairID);
+                            if (index > -1) { // only splice array when item is found
+                                pairIDs.splice(index, 1); // 2nd parameter means remove one item only
+                            }
+                        }
+                    }
+                    console.log("-------------New update-------------");
+                    console.log(pairIDs);
                 });
             });
         },
