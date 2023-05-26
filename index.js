@@ -9,6 +9,7 @@ const multer = require('multer');
 const testRouter = require('./routers/test');
 const authRouter = require('./routers/auth');
 const directMessageRouter = require('./routers/directMessage');
+const userRouter = require('./routers/user');
 const { toNamespacedPath } = require('path');
 const socket = require('./utils/socket.js');
 
@@ -49,6 +50,7 @@ socket.init(server);
 app.use('/test', testRouter);
 app.use('/auth', authRouter);
 app.use('/chat/direct-message', directMessageRouter);
+app.use('/users', userRouter);
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {

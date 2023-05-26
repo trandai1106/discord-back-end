@@ -19,9 +19,9 @@ const requireLogin = async (req, res, next) => {
             res.send(decodedToken);
         }
         else if (decodedToken.status == 200) {
-            const userExist = await User.exists({ phone: decodedToken.data.phone });
+            const userExist = await User.exists({ name: decodedToken.data.name });
             if (userExist) {
-                const user = await User.findOne({ phone: decodedToken.data.phone });
+                const user = await User.findOne({ name: decodedToken.data.name });
                 req.user = user;
                 next();
             } else {

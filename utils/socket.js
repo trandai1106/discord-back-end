@@ -62,15 +62,15 @@ const socket = (() => {
                             return;
                         }
 
-                        // Find all socket IDs of receiver 
-                        var pair = pairIDs.find(pair => pair.id == data.to_id);
+                        // Find all socket IDs of receiver and sender
+                        var receiverPair = pairIDs.find(pair => pair.id == data.to_id);
 
                         // If there is no socket ID exists, it means they are offline
-                        if (pair == null) {
+                        if (receiverPair == null) {
                             console.log("Receiver is not online");
                         }
                         else { // If they are online, emit event to them via all socket IDs
-                            pair.socketIDs.forEach(socketID => {
+                            receiverPair.socketIDs.forEach(socketID => {
                                 io.to(socketID).emit("s_directMessage", {
                                     from_id: data.from_id,
                                     to_id: data.to_id,
@@ -80,6 +80,22 @@ const socket = (() => {
                             });
                         }
 
+                        // Find all socket IDs of receiver and sender
+                        var senderPair = pairIDs.find(pair => pair.id == user._id);
+                        // If there is no socket ID exists, it means they are offline
+                        if (senderPair == null) {
+                            console.log("Sender is not online");
+                        }
+                        else { // If they are online, emit event to them via all socket IDs
+                            senderPair.socketIDs.forEach(socketID => {
+                                io.to(socketID).emit("s_directMessage", {
+                                    from_id: data.from_id,
+                                    to_id: data.to_id,
+                                    content: data.content,
+                                    time: newMessage.created_at
+                                });
+                            });
+                        }
                     }
                     else {
                         console.log("Cannot authenticate");
