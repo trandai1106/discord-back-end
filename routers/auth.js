@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const dataValidation = require('../utils/dataValidation');
 const security = require('../utils/security');
 const User = require('../models/user');
+const authMiddleware = require('../middleware/auth');
 
 route.post('/login', async (req, res) => {
     const { name, password } = req.body;
@@ -76,6 +77,27 @@ route.post('/register', async (req, res) => {
         message: 'Fail'
       })
     }
+});
+route.get('/profile', authMiddleware.requireLogin, async (req, res) => {
+  if (req.user) {
+    res.send({
+        status: 1,
+        message: 'Get user information successful',
+        data: {
+            user: {
+                name: req.user.name,
+                id: req.user._id,
+                avatar: req.user.avatar_url
+            }
+        }
+    })
+  } 
+  else {
+    res.send({
+        status: 0,
+        message: 'Error'
+    })
+  }
 });
 
 module.exports = route;
