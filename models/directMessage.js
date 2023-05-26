@@ -16,7 +16,8 @@ var DirectMessage = new Schema({
     },
     created_at: {
         type: Date,
-        default: Date.now()
+        default: Date.now,
+        required: true
     }
 });
 module.exports = mongoose.model('DirectMessage', DirectMessage);

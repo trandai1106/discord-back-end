@@ -17,12 +17,15 @@ const socket = (() => {
             });
 
             io.sockets.on('connection', function (socket) {
+
+                // Link user's socket ID with user id
                 socket.on("c_pairID", async function (data) {
                     console.log("User connect - ID: " + data.id + " - SocketID: " + socket.id);
 
+                    // Authenticate token
                     var user = await authenticate(data.access_token);
-
                     if (user) {
+                        // Check if exist id that pair before
                         var usePairID = pairIDs.find(pair => pair.id == data.id);
                         if (usePairID == null) {
                             pairIDs.push({ id: data.id, socketIDs: [socket.id] });
@@ -39,39 +42,48 @@ const socket = (() => {
                     }
                 });
 
+                // Listen of chat event from client
                 socket.on("c_directMessage", async function (data) {
                     console.log(data);
+                    // Authenticate token
                     var user = await authenticate(data.access_token);
                     if (user) {
-                        var pair = pairIDs.find(pair => pair.id == data.to_id);
-
-                        if (pair == null) {
-                            console.log("Receiver is not online");
-                        }
-                        else {
-                            pair.socketIDs.forEach(socketID => {
-                                io.to(socketID).emit("s_directMessage", {
-                                    from_id: data.from_id,
-                                    to_id: data.to_id,
-                                    content: data.content
-                                });
-                            });
-                        }
-
+                        // Check if receiver's id is exist
                         var receiver = await User.findById(data.to_id);
                         if (receiver != null) {
-                            await DirectMessage.create({
+                            var newMessage = await DirectMessage.create({
                                 from_id: user._id,
                                 to_id: data.to_id,
-                                message: data.content,
+                                message: data.content
                             })
                         }
                         else {
                             console.log("Cannot find receiver");
+                            return;
                         }
+
+                        // Find all socket IDs of receiver 
+                        var pair = pairIDs.find(pair => pair.id == data.to_id);
+
+                        // If there is no socket ID exists, it means they are offline
+                        if (pair == null) {
+                            console.log("Receiver is not online");
+                        }
+                        else { // If they are online, emit event to them via all socket IDs
+                            pair.socketIDs.forEach(socketID => {
+                                io.to(socketID).emit("s_directMessage", {
+                                    from_id: data.from_id,
+                                    to_id: data.to_id,
+                                    content: data.content,
+                                    time: newMessage.created_at
+                                });
+                            });
+                        }
+
                     }
                     else {
                         console.log("Cannot authenticate");
+                        return;
                     }
                 });
 

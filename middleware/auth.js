@@ -1,6 +1,6 @@
 // const { errorHandle } = require('./errorHandle')
 const User = require('../models/user');
-const CONFIG_STATUS = require('../config/status.json');
+const CONFIG_STATUS = require('../configs/status.json');
 const { verifyAccessToken } = require('../utils/security');
 const dataValidation = require('../utils/dataValidation');
 
