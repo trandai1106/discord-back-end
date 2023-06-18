@@ -2,11 +2,6 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 var User = new Schema({
-    // phone: {
-    //     type: String,
-    //     required: true,
-    //     unique: true
-    // },
     name: {
         type: String,
         required: true,
@@ -31,6 +26,10 @@ var User = new Schema({
     secret_key_reset_password: {
         type: String,
         default: ''
-    }
+    },
+    contacted_users: [{
+        type: String,
+        default: []
+    }]
 });
 module.exports = mongoose.model('User', User);
