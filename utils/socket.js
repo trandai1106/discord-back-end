@@ -55,7 +55,19 @@ const socket = (() => {
                                 from_id: user._id,
                                 to_id: data.to_id,
                                 message: data.content
-                            })
+                            });
+                            if (user.contacted_users) {
+                                if (!user.contacted_users.includes(data.to_id)) {
+                                    user.contacted_users.push(data.to_id);
+                                    await User.findOneAndUpdate({ _id: user._id }, { contacted_users: user.contacted_users })
+                                }
+                            }
+                            if (receiver.contacted_users) {
+                                if (!receiver.contacted_users.includes(user._id)) {
+                                    receiver.contacted_users.push(user._id);
+                                    await User.findOneAndUpdate({ _id: receiver._id }, { contacted_users: receiver.contacted_users })
+                                }
+                            }
                         }
                         else {
                             console.log("Cannot find receiver");
