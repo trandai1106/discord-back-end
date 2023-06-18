@@ -5,23 +5,47 @@ const authMiddleware = require('../middleware/auth');
 const User = require('../models/user');
 const DirectMessage = require('../models/directMessage');
 
-route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
-    var user = await User.findById(req.params.to_id);
-    if (user) {
+route.get("/all", async (req, res) => {
+    try {
+        const users = await User.find({});
         res.send({
             status: 1,
-            message: 'Get user information successful',
-            data: {
-                user: {
-                    name: user.name,
-                    id: user._id,
-                    avatar: user.avatar_url
-                }
-            }
+            users: users,
+            message: "Success"
         })
+    } catch (err) {
+        res.send({
+            status: 0,
+            message: 'Fail'
+        });
     }
-    else {
+})
 
+route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.to_id);
+        if (user) {
+            res.send({
+                status: 1,
+                message: 'Get user information successful',
+                data: {
+                    user: {
+                        name: user.name,
+                        id: user._id,
+                        avatar: user.avatar_url
+                    }
+                }
+            })
+        }
+        else {
+
+        }
+    }
+    catch (err) {
+        res.send({
+            status: 0,
+            message: 'Fail'
+        });
     }
 });
 
