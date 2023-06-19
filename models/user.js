@@ -30,6 +30,10 @@ var User = new Schema({
     contacted_users: [{
         type: String,
         default: []
+    }],
+    contacted_groups: [{
+        type: String,
+        default: []
     }]
 });
 module.exports = mongoose.model('User', User);
