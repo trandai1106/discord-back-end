@@ -25,4 +25,12 @@ route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
     }
 });
 
+route.get('/users', (req, res) => {
+    User.find({}).then(users => {
+        res.json(users);
+    }).catch(error => {
+        console.log(error);
+    })
+})
+
 module.exports = route;
