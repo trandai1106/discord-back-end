@@ -3,6 +3,8 @@ const socketIO = require('socket.io');
 const Notification = require('../models/notification');
 const User = require('../models/user');
 const DirectMessage = require('../models/directMessage');
+const RoomMessage = require('../models/roomMessage');
+const ChatRoom = require('../models/chatRoom');
 const { verifyAccessToken } = require('../utils/security');
 
 const socket = (() => {
@@ -87,7 +89,7 @@ const socket = (() => {
                                     from_id: data.from_id,
                                     to_id: data.to_id,
                                     content: data.content,
-                                    time: newMessage.created_at
+                                    created_at: newMessage.created_at
                                 });
                             });
                         }
@@ -104,10 +106,54 @@ const socket = (() => {
                                     from_id: data.from_id,
                                     to_id: data.to_id,
                                     content: data.content,
-                                    time: newMessage.created_at
+                                    created_at: newMessage.created_at
                                 });
                             });
                         }
+                    }
+                    else {
+                        console.log("Cannot authenticate");
+                        return;
+                    }
+                });
+
+
+                socket.on("c_roomMessage", async function (data) {
+                    console.log(data);
+                    // Authenticate token
+                    var user = await authenticate(data.access_token);
+                    if (user) {
+                        // Check if receiver's id is exist
+                        var room = await ChatRoom.findById(data.room_id);
+                        if (room != null) {
+                            var newMessage = await RoomMessage.create({
+                                from_id: user._id,
+                                room_id: data.room_id,
+                                message: data.content
+                            });
+                            if (user.contacted_rooms) {
+                                if (!user.contacted_rooms.includes(data.room_id)) {
+                                    user.contacted_rooms.push(data.room_id);
+                                    await User.findOneAndUpdate({ _id: user._id }, { contacted_rooms: user.contacted_rooms })
+                                }
+                            }
+                        }
+                        else {
+                            console.log("Cannot find room");
+                            return;
+                        }
+
+                        // Find all socket ID of users
+                        pairIDs.forEach(pair => {
+                            pair.socketIDs.forEach(socketID => {
+                                io.to(socketID).emit("s_roomMessage", {
+                                    from_id: data.from_id,
+                                    room_id: data.room_id,
+                                    content: data.content,
+                                    created_at: newMessage.created_at
+                                });
+                            });
+                        });
                     }
                     else {
                         console.log("Cannot authenticate");

@@ -25,9 +25,15 @@ route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
     }
 });
 
-route.get('/users', (req, res) => {
+route.get('/', (req, res) => {
     User.find({}).then(users => {
-        res.json(users);
+        res.send({
+            status: 1,
+            message: 'Get users successful',
+            data: {
+                users
+            }
+        })
     }).catch(error => {
         console.log(error);
     })

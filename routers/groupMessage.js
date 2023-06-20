@@ -3,29 +3,29 @@ const bcrypt = require('bcrypt');
 
 const authMiddleware = require('../middleware/auth');
 const User = require('../models/user');
-const GroupMessage = require('../models/groupMessage');
+const RoomMessage = require('../models/roomMessage');
 
-route.get('/channel/:channel_id', authMiddleware.requireLogin, async (req, res) => {
-    // console.log("to_id " + req.params.to_id);
-    // console.log("my_id " + req.user);
-    // const messages = await GroupMessage.find();
-    const messages = await GroupMessage.find({ channel_id: req.params.channel_id });
-    messages.sort((m1, m2) => m1.created_at - m2.created_at);
-    res.send({
-        status: 1,
-        message: 'Get group messages successful',
-        data: {
-            messages: messages
-        }
-    });
-});
+// route.get('/room/:room_id', authMiddleware.requireLogin, async (req, res) => {
+//     // console.log("to_id " + req.params.to_id);
+//     // console.log("my_id " + req.user);
+//     // const messages = await RoomMessage.find();
+//     const messages = await RoomMessage.find({ room_id: req.params.room_id });
+//     messages.sort((m1, m2) => m1.created_at - m2.created_at);
+//     res.send({
+//         status: 1,
+//         message: 'Get room messages successful',
+//         data: {
+//             messages: messages
+//         }
+//     });
+// });
 
 // route.get('/', authMiddleware.requireLogin, async (req, res) => {
 //     // console.log("to_id " + req.params.to_id);
 //     // console.log("my_id " + req.user);
-//     // const messages = await GroupMessage.find();
-//     const messages_received = await GroupMessage.find({ to_id: req.user._id });
-//     const messages_sent = await GroupMessage.find({ from_id: req.user._id });
+//     // const messages = await RoomMessage.find();
+//     const messages_received = await RoomMessage.find({ to_id: req.user._id });
+//     const messages_sent = await RoomMessage.find({ from_id: req.user._id });
 //     var messages = messages_received.concat(messages_sent);
 //     messages.sort((m1, m2) => m1.created_at - m2.created_at);
 //     res.send({
@@ -40,7 +40,7 @@ route.get('/channel/:channel_id', authMiddleware.requireLogin, async (req, res) 
 // route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
 //     // console.log("to_id " + req.params.to_id);
 //     // console.log("my_id " + req.user);
-//     // const messages = await GroupMessage.find();
+//     // const messages = await RoomMessage.find();
 //     const user = await User.findById(req.user._id);
 
 //     if (user == null) {
@@ -58,10 +58,10 @@ route.get('/channel/:channel_id', authMiddleware.requireLogin, async (req, res) 
 //     }
 
 //     for (var i = 0; i < contactedUsers.length; i++) {
-//         // var lastMsg = await GroupMessage.findOne({  })
+//         // var lastMsg = await RoomMessage.findOne({  })
         
-//         const lastMessagesFromUser = await GroupMessage.findOne({ from_id: contactedUsers[i], to_id: user._id }).sort({ created_at: -1 });
-//         const lastMessagesToUser = await GroupMessage.findOne({ from_id: user._id, to_id: contactedUsers[i] }).sort({ created_at: -1 });
+//         const lastMessagesFromUser = await RoomMessage.findOne({ from_id: contactedUsers[i], to_id: user._id }).sort({ created_at: -1 });
+//         const lastMessagesToUser = await RoomMessage.findOne({ from_id: user._id, to_id: contactedUsers[i] }).sort({ created_at: -1 });
     
 //         console.log(lastMessagesFromUser.created_at);
 //         console.log(lastMessagesToUser.created_at);

@@ -5,13 +5,37 @@ const security = require('../utils/security');
 const User = require('../models/user');
 const authMiddleware = require('../middleware/auth');
 const ChatRoom = require('../models/chatRoom');
+const RoomMessage = require('../models/roomMessage');
 
 // Route để tạo phòng chat mới
-router.post('/rooms', async (req, res) => {
+router.post('/', authMiddleware.requireLogin, async (req, res) => {
     try {
-        const chatRoom = new ChatRoom(req.body);
-        chatRoom.save()
-            .then(res.json('oke'));
+        const { name } = req.body;
+
+        if (name != '' && name != null) {
+            const isExist = await ChatRoom.findOne({ name });
+            if (isExist != null) {
+                return res.send({
+                    status: 0,
+                    message: 'Error: Room is already exist'
+                });
+            }
+
+            await ChatRoom.create({
+                name
+            });
+        }
+        else {
+            return res.send({
+                status: 0,
+                message: 'Error: Room name cannot be empty'
+            });
+        }
+
+        res.send({
+            status: 1,
+            message: 'Create room successful'
+        })
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Failed to create chat room' });
@@ -19,17 +43,54 @@ router.post('/rooms', async (req, res) => {
 });
 
 // Route để lấy danh sách các phòng chat
-router.get('/rooms', async (req, res) => {
+router.get('/', authMiddleware.requireLogin, async (req, res) => {
     try {
-        ChatRoom.find()
-            .then(rooms => {
-                res.json(rooms);
-            });
+        const rooms = await ChatRoom.find();
+        res.send({
+            status: 1,
+            message: 'Get rooms information successfull',
+            data: {
+                rooms
+            }
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Failed to fetch chat rooms' });
     }
 });
+
+router.get('/:room_id', authMiddleware.requireLogin, async (req, res) => {
+    try {
+        const room = await ChatRoom.findById(req.params.room_id);
+        res.send({
+            status: 1,
+            message: 'Get room information successfull',
+            data: {
+                room
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to fetch chat rooms' });
+    }
+});
+router.get('/:room_id/message', authMiddleware.requireLogin, async (req, res) => {
+    console.log("room_id " + req.params.room_id);
+    // console.log("my_id " + req.user);
+    // const messages = await RoomMessage.find();
+    const messages = await RoomMessage.find({ room_id: req.params.room_id });
+    messages.sort((m1, m2) => m1.created_at - m2.created_at);
+    res.send({
+        status: 1,
+        message: 'Get room messages successful',
+        data: {
+            messages: messages
+        }
+    });
+});
+
+
+////////////////////////////////
 
 // Route để tạo tin nhắn mới trong phòng chat
 // router.post('/rooms/:roomId/messages', async (req, res) => {

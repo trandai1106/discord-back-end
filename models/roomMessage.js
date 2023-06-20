@@ -1,12 +1,12 @@
 var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
-var GroupMessage = new Schema({
+var RoomMessage = new Schema({
     from_id: {
         type: String,
         required: true
     },
-    group_id: {
+    room_id: {
         type: String,
         required: true
     },
@@ -20,4 +20,4 @@ var GroupMessage = new Schema({
         required: true
     }
 });
-module.exports = mongoose.model('GroupMessage', GroupMessage);
+module.exports = mongoose.model('RoomMessage', RoomMessage);

@@ -1,11 +1,14 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ChatRoom = new Schema({
-  roomName: String,
-  messages: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message'
-  }],
+  name: {
+    type: String,
+    required: true
+  },
+  // messages: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'RoomMessage'
+  // }],
   pendingParticipants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -21,6 +24,10 @@ var ChatRoom = new Schema({
   invitedUsers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }]
+  }],
+  created_at: {
+      type: Date,
+      default: Date.now
+  }
 });
 module.exports = mongoose.model('ChatRoom', ChatRoom);
