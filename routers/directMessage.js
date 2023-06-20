@@ -110,20 +110,35 @@ route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
 
         const lastMessagesFromUser = await DirectMessage.findOne({ from_id: contactedUsers[i], to_id: user._id }).sort({ created_at: -1 });
         const lastMessagesToUser = await DirectMessage.findOne({ from_id: user._id, to_id: contactedUsers[i] }).sort({ created_at: -1 });
+    
+        if (lastMessagesFromUser == null && lastMessagesToUser == null) {
 
-        console.log(lastMessagesFromUser.created_at);
-        console.log(lastMessagesToUser.created_at);
-        if (lastMessagesFromUser.created_at > lastMessagesToUser.created_at) {
+        }
+        else if (lastMessagesFromUser != null && lastMessagesToUser == null) {
             data.push({
                 user_id: contactedUsers[i],
                 last_message: lastMessagesFromUser
             });
         }
-        else {
+        else if (lastMessagesFromUser == null && lastMessagesToUser != null) {
             data.push({
                 user_id: contactedUsers[i],
                 last_message: lastMessagesToUser
             });
+        }
+        else { // lastMessagesFromUser != null && lastMessagesToUser != null
+            if (lastMessagesFromUser.created_at > lastMessagesToUser.created_at) {
+                data.push({
+                    user_id: contactedUsers[i],
+                    last_message: lastMessagesFromUser
+                });
+            }
+            else {
+                data.push({
+                    user_id: contactedUsers[i],
+                    last_message: lastMessagesToUser
+                });
+            }
         }
     }
 
