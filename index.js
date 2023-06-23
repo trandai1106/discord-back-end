@@ -10,7 +10,7 @@ const roomRouter = require('./routers/room');
 const authRouter = require('./routers/auth');
 const directMessageRouter = require('./routers/directMessage');
 const userRouter = require('./routers/user');
-const { toNamespacedPath } = require('path');
+const path = require('path');
 const socket = require('./utils/socket.js');
 
 const upload = multer();
@@ -51,6 +51,21 @@ app.use('/auth', authRouter);
 app.use('/chat/direct-message', directMessageRouter);
 app.use('/users', userRouter);
 app.use('/room', roomRouter);
+
+// chat feature
+const { ExpressPeerServer } = require('peer')
+const peer = ExpressPeerServer(server, {
+  debug: true
+});
+app.use('/peerjs', peer);
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/call', (req, res) => {
+  res.send("Enter any room id to test");
+});
+app.get('/call/:room', (req, res) => {
+  res.render('index', { RoomId: req.params.room });
+});
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {

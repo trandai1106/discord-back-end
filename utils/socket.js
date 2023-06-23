@@ -35,7 +35,7 @@ const socket = (() => {
                         else {
                             usePairID.socketIDs.push(socket.id);
                         }
-                        
+
                         console.log("-------------New update-------------");
                         console.log(pairIDs);
                     }
@@ -160,6 +160,14 @@ const socket = (() => {
                         return;
                     }
                 });
+
+                socket.on('newUserJoinCall', (id, room) => {
+                    socket.join(room);
+                    socket.to(room).broadcast.emit('userJoined', id);
+                    socket.on('disconnect', () => {
+                        socket.to(room).broadcast.emit('userDisconnect', id);
+                    })
+                })
 
                 socket.on("disconnect", async () => {
                     console.log("User disconnect - SocketID: " + socket.id);
