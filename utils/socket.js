@@ -163,11 +163,11 @@ const socket = (() => {
 
                 socket.on('newUserJoinCall', (id, room) => {
                     socket.join(room);
-                    socket.to(room).broadcast.emit('userJoined', id);
+                    socket.to(room).emit('userJoined', id);
                     socket.on('disconnect', () => {
-                        socket.to(room).broadcast.emit('userDisconnect', id);
-                    })
-                })
+                        socket.to(room).emit('userDisconnect', id);
+                    });
+                });
 
                 socket.on("disconnect", async () => {
                     console.log("User disconnect - SocketID: " + socket.id);
