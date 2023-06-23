@@ -161,6 +161,12 @@ const socket = (() => {
                     }
                 });
 
+                socket.on("call", (data) => {
+                    const { call_id, to_id } = data;
+                    const toSocketId = pairIDs.filter(pairID => pairID.id === to_id)[0].socketIDs[0];
+                    socket.to(toSocketId).emit("call", call_id);
+                });
+
                 socket.on('newUserJoinCall', (id, room) => {
                     socket.join(room);
                     socket.to(room).emit('userJoined', id);
