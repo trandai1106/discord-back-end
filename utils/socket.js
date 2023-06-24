@@ -182,6 +182,16 @@ const socket = (() => {
                     }
                 });
 
+                socket.on("roomCall", (data) => {
+                    try {
+                        pairIDs.forEach(pair => {
+                            io.to(pair.socketIDs).emit("roomCall", data);
+                        });
+                    } catch {
+                        
+                    }
+                });
+
                 socket.on("rejectCall", (data) => {
                     try {
                         const receiverPair = pairIDs.find(pair => pair.id == data.to_id);
@@ -199,6 +209,14 @@ const socket = (() => {
                         // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
                         // socket.to(fromSocketId).emit("offiline", data);
                     }
+                });
+
+                socket.on('newCall', (id, room) => {
+                    socket.join(room);
+                    socket.to(room).emit('newuserJoinedCall', id);
+                    socket.on('disconnect', () => {
+                        socket.to(room).emit('userLeaveCall', id);
+                    });
                 });
 
                 socket.on('newCall', (id, room) => {
