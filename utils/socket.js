@@ -161,17 +161,32 @@ const socket = (() => {
                     }
                 });
 
-                socket.on("call", (data) => {
-                    const { call_id, to_id } = data;
-                    const toSocketId = pairIDs.filter(pairID => pairID.id === to_id)[0].socketIDs[0];
-                    socket.to(toSocketId).emit("call", call_id);
+                socket.on("directCall", (data) => {
+                    try {
+                        const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
+                        socket.to(toSocketId).emit("directCall", data);
+                    } catch {
+                        // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
+                        // socket.to(fromSocketId).emit("offiline", data);
+                    }
                 });
 
-                socket.on('newUserJoinCall', (id, room) => {
+                socket.on("rejectCall", (data) => {
+                    try {
+                        console.log("Rejecting call");
+                        const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
+                        socket.to(toSocketId).emit("rejectedCall", data);
+                    } catch {
+                        // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
+                        // socket.to(fromSocketId).emit("offiline", data);
+                    }
+                });
+
+                socket.on('newCall', (id, room) => {
                     socket.join(room);
-                    socket.to(room).emit('userJoined', id);
+                    socket.to(room).emit('newuserJoinedCall', id);
                     socket.on('disconnect', () => {
-                        socket.to(room).emit('userDisconnect', id);
+                        socket.to(room).emit('userLeaveCall', id);
                     });
                 });
 

@@ -32,12 +32,12 @@ navigator.mediaDevices.getUserMedia({
 })
 peer.on('open', (id) => {
   myId = id;
-  socket.emit("newUserJoinCall", id, roomID);
+  socket.emit("newCall", id, roomID);
 })
 peer.on('error', (err) => {
   alert(err.type);
 });
-socket.on('userJoined', id => {
+socket.on('newuserJoinedCall', id => {
   console.log("new user joined")
   const call = peer.call(id, myVideoStream);
   const vid = document.createElement('video');
@@ -53,10 +53,14 @@ socket.on('userJoined', id => {
   })
   peerConnections[id] = call;
 })
-socket.on('userDisconnect', id => {
+socket.on('userLeaveCall', id => {
   if (peerConnections[id]) {
     peerConnections[id].close();
   }
+
+  // if (peerConnections[myId] === peerConnections) {
+  //   window.close();
+  // }
 });
 function addVideo(video, stream) {
   video.srcObject = stream;
