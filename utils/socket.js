@@ -36,7 +36,9 @@ const socket = (() => {
                             usePairID.socketIDs.push(socket.id);
                         }
 
-                        console.log("-------------New update-------------");
+                        io.emit("updateUserOnlineList", pairIDs.map(pairID => pairID.id));
+
+                        console.log("-------------New update-------------", new Date().toLocaleTimeString());
                         console.log(pairIDs);
                     }
                     else {
@@ -163,8 +165,17 @@ const socket = (() => {
 
                 socket.on("directCall", (data) => {
                     try {
-                        const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
-                        socket.to(toSocketId).emit("directCall", data);
+                        const receiverPair = pairIDs.find(pair => pair.id == data.to_id);
+                        if (receiverPair == null) {
+                            console.log("Receiver is not online");
+                        }
+                        else {
+                            receiverPair.socketIDs.forEach(socketID => {
+                                io.to(socketID).emit("directCall", data);
+                            });
+                        }
+                        // const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
+                        // socket.to(toSocketId).emit("directCall", data);
                     } catch {
                         // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
                         // socket.to(fromSocketId).emit("offiline", data);
@@ -173,9 +184,17 @@ const socket = (() => {
 
                 socket.on("rejectCall", (data) => {
                     try {
-                        console.log("Rejecting call");
-                        const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
-                        socket.to(toSocketId).emit("rejectedCall", data);
+                        const receiverPair = pairIDs.find(pair => pair.id == data.to_id);
+                        if (receiverPair == null) {
+                            console.log("Receiver is not online");
+                        }
+                        else {
+                            receiverPair.socketIDs.forEach(socketID => {
+                                io.to(socketID).emit("rejectedCall", data);
+                            });
+                        }
+                        // const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
+                        // socket.to(toSocketId).emit("rejectedCall", data);
                     } catch {
                         // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
                         // socket.to(fromSocketId).emit("offiline", data);
@@ -191,7 +210,7 @@ const socket = (() => {
                 });
 
                 socket.on("disconnect", async () => {
-                    console.log("User disconnect - SocketID: " + socket.id);
+                    console.log("User disconnect - SocketID: " + socket.id, new Date().toLocaleTimeString());
 
                     var usePairID = pairIDs.find(pair => pair.socketIDs.includes(socket.id));
                     if (usePairID == null) {
@@ -209,7 +228,10 @@ const socket = (() => {
                             }
                         }
                     }
-                    console.log("-------------New update-------------");
+
+                    io.emit("updateUserOnlineList", pairIDs.map(pairID => pairID.id));
+
+                    console.log("-------------New update-------------", new Date().toLocaleTimeString());
                     console.log(pairIDs);
                 });
             });
