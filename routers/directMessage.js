@@ -105,4 +105,10 @@ route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
     });
 });
 
+
+route.get('/all', async (req, res) => {
+    const messages = await DirectMessage.find({});
+    res.send(messages); 
+})
+
 module.exports = route;

@@ -5,14 +5,20 @@ var User = new Schema({
     name: {
         type: String,
         required: true,
-        unique: true
     },
     encrypted_password: {
         type: String,
         required: true
     },
     email: {
-        type: String
+        type: String,
+        required: true,
+        unique: true
+    },
+    role: {
+        type: String,
+        require: true,
+        default: 'user'
     },
     avatar_url: {
         type: String,

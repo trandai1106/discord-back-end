@@ -43,7 +43,7 @@ router.post('/', authMiddleware.requireLogin, async (req, res) => {
 });
 
 // Route để lấy danh sách các phòng chat
-router.get('/', authMiddleware.requireLogin, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const rooms = await ChatRoom.find();
         res.send({
@@ -74,7 +74,9 @@ router.get('/:room_id', authMiddleware.requireLogin, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch chat rooms' });
     }
 });
-router.get('/:room_id/message', authMiddleware.requireLogin, async (req, res) => {
+
+// Get all room messages
+router.get('/:room_id/message', async (req, res) => {
     console.log("room_id " + req.params.room_id);
     // console.log("my_id " + req.user);
     // const messages = await RoomMessage.find();

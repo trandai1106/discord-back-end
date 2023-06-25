@@ -52,7 +52,7 @@ app.use('/chat/direct-message', directMessageRouter);
 app.use('/users', userRouter);
 app.use('/room', roomRouter);
 
-// chat feature
+// call feature
 const { ExpressPeerServer } = require('peer')
 const peer = ExpressPeerServer(server, {
   debug: true
