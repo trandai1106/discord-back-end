@@ -61,10 +61,10 @@ route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
 
     for (var i = 0; i < contactedUsers.length; i++) {
         // var lastMsg = await DirectMessage.findOne({  })
-        
+
         const lastMessagesFromUser = await DirectMessage.findOne({ from_id: contactedUsers[i], to_id: user._id }).sort({ created_at: -1 });
         const lastMessagesToUser = await DirectMessage.findOne({ from_id: user._id, to_id: contactedUsers[i] }).sort({ created_at: -1 });
-    
+
         if (lastMessagesFromUser == null && lastMessagesToUser == null) {
 
         }
@@ -95,7 +95,7 @@ route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
             }
         }
     }
-    
+
     res.send({
         status: 1,
         message: 'Get messages history successful',
@@ -106,9 +106,53 @@ route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
 });
 
 
+// Get all messages
 route.get('/all', async (req, res) => {
     const messages = await DirectMessage.find({});
-    res.send(messages); 
-})
+    res.send(messages);
+});
+
+route.delete('/delete/all', (req, res) => {
+    const user1 = req.body.user1;
+    const user2 = req.body.user2;
+    DirectMessage.deleteMany({
+        $or: [
+            { from_id: user1, to_id: user2 },
+            { from_id: user2, to_id: user1 }
+        ]
+    }).then(data => {
+        res.send({
+            status: 1,
+            message: "Delete messages succesful",
+            data: data
+        });
+    }).catch(err => {
+        res.send({
+            status: 0,
+            message: "Error while deleting message",
+            data: err
+        })
+    });
+});
+
+
+// Delete message by id
+route.delete('/delete/:id', (req, res) => {
+    DirectMessage.findByIdAndDelete(req.params.id)
+        .then(data => {
+            res.send({
+                status: 1,
+                message: "Delete message succesful",
+                data: data
+            });
+        })
+        .catch(err => {
+            res.send({
+                status: 0,
+                message: "Error while deleting message",
+                data: err
+            })
+        });
+});
 
 module.exports = route;
