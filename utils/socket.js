@@ -174,8 +174,6 @@ const socket = (() => {
                                 io.to(socketID).emit("directCall", data);
                             });
                         }
-                        // const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
-                        // socket.to(toSocketId).emit("directCall", data);
                     } catch {
                         // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
                         // socket.to(fromSocketId).emit("offiline", data);
@@ -188,7 +186,7 @@ const socket = (() => {
                             io.to(pair.socketIDs).emit("roomCall", data);
                         });
                     } catch {
-                        
+
                     }
                 });
 
@@ -203,8 +201,6 @@ const socket = (() => {
                                 io.to(socketID).emit("rejectedCall", data);
                             });
                         }
-                        // const toSocketId = pairIDs.filter(pairID => pairID.id === data.to_id)[0].socketIDs[0];
-                        // socket.to(toSocketId).emit("rejectedCall", data);
                     } catch {
                         // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
                         // socket.to(fromSocketId).emit("offiline", data);
@@ -219,11 +215,10 @@ const socket = (() => {
                     });
                 });
 
-                socket.on('newCall', (id, room) => {
-                    socket.join(room);
-                    socket.to(room).emit('newuserJoinedCall', id);
-                    socket.on('disconnect', () => {
-                        socket.to(room).emit('userLeaveCall', id);
+                socket.on('checkOnlineUserList', (userId) => {
+                    const receiverPair = pairIDs.find(pair => pair.id == userId);
+                    receiverPair.socketIDs.forEach(socketID => {
+                        io.to(socketID).emit("updateUserOnlineList", pairIDs.map(pairID => pairID.id));
                     });
                 });
 
