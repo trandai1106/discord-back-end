@@ -43,7 +43,7 @@ route.get('/', (req, res) => {
 });
 
 // Update user information
-route.post('/:id', async (req, res) => {
+route.put('/:id', async (req, res) => {
     try {
         const { name, email } = req.body;
         const user = await User.findById(req.params.id);
@@ -76,6 +76,9 @@ route.post('/:id', async (req, res) => {
         });
     }
 });
+
+
+// Upload user avatar
 
 // Delete user by id
 route.delete('/:id', (req, res) => {

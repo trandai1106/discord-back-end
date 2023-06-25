@@ -217,9 +217,11 @@ const socket = (() => {
 
                 socket.on('checkOnlineUserList', (userId) => {
                     const receiverPair = pairIDs.find(pair => pair.id == userId);
-                    receiverPair.socketIDs.forEach(socketID => {
-                        io.to(socketID).emit("updateUserOnlineList", pairIDs.map(pairID => pairID.id));
-                    });
+                    if (receiverPair) {
+                        receiverPair.socketIDs.forEach(socketID => {
+                            io.to(socketID).emit("updateUserOnlineList", pairIDs.map(pairID => pairID.id));
+                        });
+                    }
                 });
 
                 socket.on("disconnect", async () => {
