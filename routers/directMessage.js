@@ -136,7 +136,7 @@ route.delete('/delete/all', (req, res) => {
 });
 
 
-// Delete message by id
+// Delete direct message by id
 route.delete('/delete/:id', (req, res) => {
     DirectMessage.findByIdAndDelete(req.params.id)
         .then(data => {

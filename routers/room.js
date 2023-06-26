@@ -91,6 +91,26 @@ router.get('/:room_id/message', async (req, res) => {
     });
 });
 
+// Delete room messages by id
+router.delete('/delete/:id', (req, res) => {
+    RoomMessage.findByIdAndDelete(req.params.id)
+        .then(data => {
+            res.send({
+                status: 1,
+                message: "Delete message succesful",
+                data: data
+            });
+        })
+        .catch(err => {
+            res.send({
+                status: 0,
+                message: "Error while deleting message",
+                data: err
+            })
+        });
+});
+
+
 
 ////////////////////////////////
 

@@ -163,7 +163,7 @@ const socket = (() => {
                     }
                 });
 
-                socket.on("deleteMessage", (data) => {
+                socket.on("deleteDirectMessage", (data) => {
                     try {
                         const receiverPair = pairIDs.find(pair => pair.id == data.to_id);
                         if (receiverPair == null) {
@@ -171,12 +171,28 @@ const socket = (() => {
                         }
                         else {
                             receiverPair.socketIDs.forEach(socketID => {
-                                io.to(socketID).emit("deleteMessage", data);
+                                io.to(socketID).emit("deleteDirectMessage", data);
                             });
                         }
                     } catch {
-                        // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
-                        // socket.to(fromSocketId).emit("offiline", data);
+                    }
+                });
+
+
+                socket.on("deleteRoomMessage", (data) => {
+                    try {
+                        // Find all socket ID of users
+                        if (pairIDs === null) {
+                            return;
+                        }
+                        pairIDs.forEach(pair => {
+                            pair.socketIDs.forEach(socketID => {
+                                if (pair.id !== data.from_id) {
+                                    io.to(socketID).emit("deleteRoomMessage", data);
+                                }
+                            });
+                        });
+                    } catch {
                     }
                 });
 
