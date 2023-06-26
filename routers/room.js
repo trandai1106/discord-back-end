@@ -376,5 +376,33 @@ router.post('/chatroom/:roomId/addUser/:userId', async (req, res) => {
         res.status(500).send('Lỗi khi thêm người dùng vào phòng chat');
     }
 });
+// xem ai trong phòng chat 
+router.get('/chatroom/:roomId/users', async (req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        const userId = req.user.id; // Assume you have the authenticated user ID
+
+        // Tìm kiếm phòng chat với roomId tương ứng
+        const chatRoom = await ChatRoom.findById(roomId);
+
+        if (!chatRoom) {
+            return res.status(404).send('Không tìm thấy phòng chat');
+        }
+
+        // Kiểm tra xem người dùng hiện tại là một trong các người tham gia
+        const isMember = chatRoom.approvedParticipants.includes(userId);
+
+        if (!isMember) {
+            return res.status(403).send('Bạn không phải là thành viên của nhóm chat');
+        }
+
+        const users = chatRoom.approvedParticipants;
+
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi lấy danh sách người dùng trong phòng chat');
+    }
+});
 
 module.exports = router;
