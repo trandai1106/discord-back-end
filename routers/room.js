@@ -324,5 +324,25 @@ router.post('/upload', upload.single('image'), async (req, res) => {
         res.status(500).send('Lỗi khi lưu ảnh vào cơ sở dữ liệu');
     }
 });
+// lấy ảnh ra
+router.get('/image/:id', async (req, res) => {
+    try {
+        const imageId = req.params.id;
 
+        // Tìm kiếm ảnh trong cơ sở dữ liệu với id tương ứng
+        const image = await Image.findById(imageId);
+
+        if (!image) {
+            return res.status(404).send('Không tìm thấy ảnh');
+        }
+
+        const imageData = Buffer.from(image.data, 'base64');
+
+        res.set('Content-Type', 'image/jpeg');
+        res.send(imageData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi truy xuất ảnh từ cơ sở dữ liệu');
+    }
+});
 module.exports = router;
