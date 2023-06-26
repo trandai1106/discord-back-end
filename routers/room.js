@@ -345,4 +345,36 @@ router.get('/image/:id', async (req, res) => {
         res.status(500).send('Lỗi khi truy xuất ảnh từ cơ sở dữ liệu');
     }
 });
+
+// add ai đó vào nhóm 
+router.post('/chatroom/:roomId/addUser/:userId', async (req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        const userId = req.params.userId;
+
+        // Tìm kiếm phòng chat với roomId tương ứng
+        const chatRoom = await ChatRoom.findById(roomId);
+
+        if (!chatRoom) {
+            return res.status(404).send('Không tìm thấy phòng chat');
+        }
+
+        // Tìm kiếm người dùng với userId tương ứng
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).send('Không tìm thấy người dùng');
+        }
+
+        // Thêm người dùng vào danh sách người tham gia phòng chat
+        chatRoom.approvedParticipants.push(userId);
+        await chatRoom.save();
+
+        res.send('Người dùng đã được thêm vào phòng chat thành công');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi thêm người dùng vào phòng chat');
+    }
+});
+
 module.exports = router;
