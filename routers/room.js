@@ -408,4 +408,85 @@ router.post('/upload', upload.single('image'), async (req, res) => {
     }
 });
 
+// lấy ảnh ra
+router.get('/image/:id', async (req, res) => {
+    try {
+        const imageId = req.params.id;
+
+        // Tìm kiếm ảnh trong cơ sở dữ liệu với id tương ứng
+        const image = await Image.findById(imageId);
+
+        if (!image) {
+            return res.status(404).send('Không tìm thấy ảnh');
+        }
+
+        const imageData = Buffer.from(image.data, 'base64');
+
+        res.set('Content-Type', 'image/jpeg');
+        res.send(imageData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi truy xuất ảnh từ cơ sở dữ liệu');
+    }
+});
+
+// add ai đó vào nhóm 
+router.post('/chatroom/:roomId/addUser/:userId', async (req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        const userId = req.params.userId;
+
+        // Tìm kiếm phòng chat với roomId tương ứng
+        const chatRoom = await ChatRoom.findById(roomId);
+
+        if (!chatRoom) {
+            return res.status(404).send('Không tìm thấy phòng chat');
+        }
+
+        // Tìm kiếm người dùng với userId tương ứng
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).send('Không tìm thấy người dùng');
+        }
+
+        // Thêm người dùng vào danh sách người tham gia phòng chat
+        chatRoom.approvedParticipants.push(userId);
+        await chatRoom.save();
+
+        res.send('Người dùng đã được thêm vào phòng chat thành công');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi thêm người dùng vào phòng chat');
+    }
+});
+// xem ai trong phòng chat 
+router.get('/chatroom/:roomId/users', async (req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        const userId = req.user.id; // Assume you have the authenticated user ID
+
+        // Tìm kiếm phòng chat với roomId tương ứng
+        const chatRoom = await ChatRoom.findById(roomId);
+
+        if (!chatRoom) {
+            return res.status(404).send('Không tìm thấy phòng chat');
+        }
+
+        // Kiểm tra xem người dùng hiện tại là một trong các người tham gia
+        const isMember = chatRoom.approvedParticipants.includes(userId);
+
+        if (!isMember) {
+            return res.status(403).send('Bạn không phải là thành viên của nhóm chat');
+        }
+
+        const users = chatRoom.approvedParticipants;
+
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi lấy danh sách người dùng trong phòng chat');
+    }
+});
+
 module.exports = router;

@@ -9,6 +9,25 @@ const multer = require('multer');
 
 const upload = multer();
 
+route.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q;
+        const users = await User.find({ name: new RegExp(query, "i") }).select('email name id avatar_url');
+        res.send({
+            status: 1,
+            message: 'Search users successful',
+            data: {
+                users
+            }
+        });
+    } catch (err) {
+        res.send({
+            status: 0,
+            message: 'Error searching users',
+        });
+    }
+});
+
 route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
     var user = await User.findById(req.params.to_id);
     if (user) {
