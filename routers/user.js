@@ -4,7 +4,10 @@ const bcrypt = require('bcrypt');
 const authMiddleware = require('../middleware/auth');
 const User = require('../models/user');
 const DirectMessage = require('../models/directMessage');
-const RoomMessage = require('../models/roomMessage');
+const Image = require('../models/image');
+const multer = require('multer');
+
+const upload = multer();
 
 route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
     var user = await User.findById(req.params.to_id);
