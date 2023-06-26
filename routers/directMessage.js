@@ -1,11 +1,11 @@
-const route = require('express').Router();
+const router = require('express').Router();
 const bcrypt = require('bcrypt');
 
 const authMiddleware = require('../middleware/auth');
 const User = require('../models/user');
 const DirectMessage = require('../models/directMessage');
 
-route.get('/to/:to_id', authMiddleware.requireLogin, async (req, res) => {
+router.get('/to/:to_id', authMiddleware.requireLogin, async (req, res) => {
     // console.log("to_id " + req.params.to_id);
     // console.log("my_id " + req.user);
     // const messages = await DirectMessage.find();
@@ -22,7 +22,7 @@ route.get('/to/:to_id', authMiddleware.requireLogin, async (req, res) => {
     });
 });
 
-route.get('/', authMiddleware.requireLogin, async (req, res) => {
+router.get('/', authMiddleware.requireLogin, async (req, res) => {
     // console.log("to_id " + req.params.to_id);
     // console.log("my_id " + req.user);
     // const messages = await DirectMessage.find();
@@ -39,7 +39,7 @@ route.get('/', authMiddleware.requireLogin, async (req, res) => {
     });
 });
 
-route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
+router.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
     // console.log("to_id " + req.params.to_id);
     // console.log("my_id " + req.user);
     // const messages = await DirectMessage.find();
@@ -107,12 +107,12 @@ route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
 
 
 // Get all messages
-route.get('/all', async (req, res) => {
+router.get('/all', async (req, res) => {
     const messages = await DirectMessage.find({});
     res.send(messages);
 });
 
-route.delete('/delete/all', (req, res) => {
+router.delete('/delete/all', (req, res) => {
     const user1 = req.body.user1;
     const user2 = req.body.user2;
     DirectMessage.deleteMany({
@@ -137,7 +137,7 @@ route.delete('/delete/all', (req, res) => {
 
 
 // Delete direct message by id
-route.delete('/delete/:id', (req, res) => {
+router.delete('/delete/:id', (req, res) => {
     DirectMessage.findByIdAndDelete(req.params.id)
         .then(data => {
             res.send({
@@ -155,4 +155,4 @@ route.delete('/delete/:id', (req, res) => {
         });
 });
 
-module.exports = route;
+module.exports = router;

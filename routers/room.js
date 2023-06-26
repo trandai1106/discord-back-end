@@ -387,48 +387,26 @@ router.post('/api/rooms/:roomId/accept-invite', async (req, res) => {
         res.status(500).json({ error: 'Failed to add user to chat room' });
     }
 });
-router.post('/upload', upload.single('image'), async (req, res) => {
-    try {
-        if (!req.file) {
-            console.log(req.file)
-            return res.status(400).send('Không có tệp tin được tải lên');
-        }
+// router.post('/upload', upload.single('image'), async (req, res) => {
+//     try {
+//         if (!req.file) {
+//             console.log(req.file)
+//             return res.status(400).send('Không có tệp tin được tải lên');
+//         }
 
-        const newImage = new Image({
-            name: req.file.originalname,
-            data: req.file.buffer.toString('base64')
-        });
+//         const newImage = new Image({
+//             name: req.file.originalname,
+//             data: req.file.buffer.toString('base64')
+//         });
 
-        await newImage.save();
+//         await newImage.save();
 
-        res.send('Ảnh đã được tải lên và lưu vào cơ sở dữ liệu');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Lỗi khi lưu ảnh vào cơ sở dữ liệu');
-    }
-});
-
-// lấy ảnh ra
-router.get('/image/:id', async (req, res) => {
-    try {
-        const imageId = req.params.id;
-
-        // Tìm kiếm ảnh trong cơ sở dữ liệu với id tương ứng
-        const image = await Image.findById(imageId);
-
-        if (!image) {
-            return res.status(404).send('Không tìm thấy ảnh');
-        }
-
-        const imageData = Buffer.from(image.data, 'base64');
-
-        res.set('Content-Type', 'image/jpeg');
-        res.send(imageData);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Lỗi khi truy xuất ảnh từ cơ sở dữ liệu');
-    }
-});
+//         res.send('Ảnh đã được tải lên và lưu vào cơ sở dữ liệu');
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send('Lỗi khi lưu ảnh vào cơ sở dữ liệu');
+//     }
+// });
 
 // add ai đó vào nhóm 
 router.post('/chatroom/:roomId/addUser/:userId', async (req, res) => {

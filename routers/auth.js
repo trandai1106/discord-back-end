@@ -1,11 +1,11 @@
-const route = require('express').Router();
+const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const dataValidation = require('../utils/dataValidation');
 const security = require('../utils/security');
 const User = require('../models/user');
 const authMiddleware = require('../middleware/auth');
 
-route.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   console.log('login request ' + email + " - " + password);
 
@@ -45,7 +45,7 @@ route.post('/login', async (req, res) => {
 
 
 });
-route.post('/register', async (req, res) => {
+router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   console.log('register request ' + email + " - " + password);
   if (!dataValidation.isArrayHasBlankOrNullElement([name, email, password])) {
@@ -78,7 +78,7 @@ route.post('/register', async (req, res) => {
     })
   }
 });
-route.get('/profile', authMiddleware.requireLogin, async (req, res) => {
+router.get('/profile', authMiddleware.requireLogin, async (req, res) => {
   if (req.user) {
     res.send({
       status: 1,
@@ -101,4 +101,4 @@ route.get('/profile', authMiddleware.requireLogin, async (req, res) => {
   }
 });
 
-module.exports = route;
+module.exports = router;

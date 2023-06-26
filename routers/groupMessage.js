@@ -1,11 +1,11 @@
-const route = require('express').Router();
+const router = require('express').Router();
 const bcrypt = require('bcrypt');
 
 const authMiddleware = require('../middleware/auth');
 const User = require('../models/user');
 const RoomMessage = require('../models/roomMessage');
 
-// route.get('/room/:room_id', authMiddleware.requireLogin, async (req, res) => {
+// router.get('/room/:room_id', authMiddleware.requireLogin, async (req, res) => {
 //     // console.log("to_id " + req.params.to_id);
 //     // console.log("my_id " + req.user);
 //     // const messages = await RoomMessage.find();
@@ -20,7 +20,7 @@ const RoomMessage = require('../models/roomMessage');
 //     });
 // });
 
-// route.get('/', authMiddleware.requireLogin, async (req, res) => {
+// router.get('/', authMiddleware.requireLogin, async (req, res) => {
 //     // console.log("to_id " + req.params.to_id);
 //     // console.log("my_id " + req.user);
 //     // const messages = await RoomMessage.find();
@@ -37,7 +37,7 @@ const RoomMessage = require('../models/roomMessage');
 //     });
 // });
 
-// route.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
+// router.get('/contacted', authMiddleware.requireLogin, async (req, res) => {
 //     // console.log("to_id " + req.params.to_id);
 //     // console.log("my_id " + req.user);
 //     // const messages = await RoomMessage.find();
@@ -88,4 +88,4 @@ const RoomMessage = require('../models/roomMessage');
 //     });
 // });
 
-module.exports = route;
+module.exports = router;

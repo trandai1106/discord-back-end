@@ -1,4 +1,4 @@
-const route = require('express').Router();
+const router = require('express').Router();
 const bcrypt = require('bcrypt');
 
 const authMiddleware = require('../middleware/auth');
@@ -7,9 +7,9 @@ const DirectMessage = require('../models/directMessage');
 const Image = require('../models/image');
 const multer = require('multer');
 
-const upload = multer();
+const upload = multer({ storage: multer.memoryStorage() });
 
-route.get('/search', async (req, res) => {
+router.get('/search', async (req, res) => {
     try {
         const query = req.query.q;
         const users = await User.find({ name: new RegExp(query, "i") }).select('email name id avatar_url');
@@ -28,7 +28,7 @@ route.get('/search', async (req, res) => {
     }
 });
 
-route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
+router.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
     var user = await User.findById(req.params.to_id);
     if (user) {
         res.send({
@@ -50,7 +50,7 @@ route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
 });
 
 // Get all users
-route.get('/', (req, res) => {
+router.get('/', (req, res) => {
     User.find({}).then(users => {
         res.send({
             status: 1,
@@ -65,7 +65,7 @@ route.get('/', (req, res) => {
 });
 
 // Update user information
-route.put('/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
     try {
         const { name, email } = req.body;
         const user = await User.findById(req.params.id);
@@ -94,38 +94,98 @@ route.put('/:id', async (req, res) => {
     catch (err) {
         res.send({
             status: 0,
-            message: 'Error updating user information',
+            message: 'Error while updating user information',
         });
     }
 });
 
 
 // Upload user avatar
-route.post('/avatar/:id', upload.single('image'), async (req, res) => {
+router.post('/avatar/:id', upload.single("file"), async (req, res) => {
     try {
         const userId = req.params.id;
+
         if (!req.file) {
-            console.log(req.file)
-            return res.status(400).send('Không có tệp tin được tải lên');
+            return res.status(400).send({
+                status: 0,
+                message: 'There was an error while uploading the file'
+            });
         }
 
-        const newImage = new Image({
-            name: userId,
-            data: req.file.buffer.toString('base64')
+        const imageData = req.file.buffer.toString('base64');
+        const existingImage = await Image.findOne({ name: userId });
+
+        if (existingImage) {
+            existingImage.data = imageData;
+            await existingImage.save();
+        } else {
+            console.log('new image');
+            const user = await User.findByIdAndUpdate(userId, {
+                avatar_url: "/users/images/" + userId
+            })
+            const newImage = new Image({
+                name: userId,
+                data: imageData
+            });
+            await newImage.save();
+        }
+
+        res.send({
+            status: 1,
+            message: 'Image uploaded successfully',
         });
-
-        await newImage.save();
-
-        res.send('Ảnh đã được tải lên và lưu vào cơ sở dữ liệu');
     } catch (error) {
         console.error(error);
-        res.status(500).send('Lỗi khi lưu ảnh vào cơ sở dữ liệu');
+        res.status(500).send({
+            status: 0,
+            message: 'Error while uploading image'
+        });
     }
 });
 
+// Get all the images
+router.get('/images/all', async (req, res) => {
+    const image = await Image.find();
+    res.send({
+        status: 1,
+        data: image
+    })
+})
+
+// Get image from database
+router.get('/images/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const image = await Image.findOne({ name: id });
+
+        if (!image) {
+            return res.status(404).send({
+                status: 0,
+                message: 'Image not found'
+            });
+        }
+
+        const imageData = Buffer.from(image.data, 'base64');
+        res.set('Content-Type', 'image/jpeg');
+        res.send(imageData);
+    } catch (error) {
+        console.error(error)
+        res.status(500).send({
+            status: 0,
+            message: 'Get image fail'
+        });
+    }
+});
+
+router.delete('/images/:id', async (req, res) => {
+    Image.findOneAndDelete({ name: req.params.id })
+        .then(data => res.send("delete successfuly"))
+        .catch(error => res.status(500).send("Error deleting image"))
+});
 
 // Delete user by id
-route.delete('/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     User.findByIdAndDelete(req.params.id).then(users => {
         DirectMessage.deleteMany({
             $or: [
@@ -154,4 +214,4 @@ route.delete('/:id', (req, res) => {
     });
 });
 
-module.exports = route;
+module.exports = router;
