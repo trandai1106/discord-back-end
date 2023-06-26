@@ -28,8 +28,8 @@ route.get('/search', async (req, res) => {
     }
 });
 
-route.get('/:to_id', authMiddleware.requireLogin, async (req, res) => {
-    var user = await User.findById(req.params.to_id);
+route.get('/:id', authMiddleware.requireLogin, async (req, res) => {
+    var user = await User.findById(req.params.id);
     if (user) {
         res.send({
             status: 1,
