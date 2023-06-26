@@ -7,6 +7,7 @@ const authMiddleware = require('../middleware/auth');
 const ChatRoom = require('../models/chatRoom');
 const Image = require('../models/image');
 const multer = require('multer');
+const RoomMessage = require('../models/roomMessage');
 
 const upload = multer();
 
@@ -384,26 +385,6 @@ router.post('/api/rooms/:roomId/accept-invite', async (req, res) => {
         res.json({ message: 'User added to chat room successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to add user to chat room' });
-    }
-});
-router.post('/upload', upload.single('image'), async (req, res) => {
-    try {
-        if (!req.file) {
-            console.log(req.file)
-            return res.status(400).send('Không có tệp tin được tải lên');
-        }
-
-        const newImage = new Image({
-            name: req.file.originalname,
-            data: req.file.buffer.toString('base64')
-        });
-
-        await newImage.save();
-
-        res.send('Ảnh đã được tải lên và lưu vào cơ sở dữ liệu');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Lỗi khi lưu ảnh vào cơ sở dữ liệu');
     }
 });
 

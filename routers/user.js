@@ -82,6 +82,28 @@ route.put('/:id', async (req, res) => {
 
 
 // Upload user avatar
+route.post('/avatar/:id', upload.single('image'), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        if (!req.file) {
+            console.log(req.file)
+            return res.status(400).send('Không có tệp tin được tải lên');
+        }
+
+        const newImage = new Image({
+            name: userId,
+            data: req.file.buffer.toString('base64')
+        });
+
+        await newImage.save();
+
+        res.send('Ảnh đã được tải lên và lưu vào cơ sở dữ liệu');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi lưu ảnh vào cơ sở dữ liệu');
+    }
+});
+
 
 // Delete user by id
 route.delete('/:id', (req, res) => {
