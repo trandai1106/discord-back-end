@@ -439,7 +439,7 @@ router.post('/chatroom/:roomId/addUser/:userId', async (req, res) => {
     }
 });
 // xem ai trong phòng chat 
-router.get('/chatroom/:roomId/users', async (req, res) => {
+router.get('/chatroom/:roomId/users', authMiddleware.requireLogin, async (req, res) => {
     try {
         const roomId = req.params.roomId;
         const userId = req.user.id; // Assume you have the authenticated user ID
@@ -458,9 +458,27 @@ router.get('/chatroom/:roomId/users', async (req, res) => {
             return res.status(403).send('Bạn không phải là thành viên của nhóm chat');
         }
 
-        const users = chatRoom.approvedParticipants;
+        const membersId = chatRoom.approvedParticipants;
+        const membersInfo = [];
+        for (var i = 0; i < membersId.length; i++) {
+            const member = await User.findById(membersId[i]);
+            if (member) {
+                membersInfo.push({
+                    _id: member._id,
+                    name: member.name,
+                    email: member.email,
+                    avatar_url: member.avatar_url
+                });
+            }
+        }
 
-        res.json(users);
+        return res.send({
+            status: 1,
+            message: 'Get members in group successful',
+            data: {
+                members: membersInfo
+            }
+        }); 
     } catch (error) {
         console.error(error);
         res.status(500).send('Lỗi khi lấy danh sách người dùng trong phòng chat');

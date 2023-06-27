@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const dataValidation = require('../utils/dataValidation');
 const security = require('../utils/security');
 const User = require('../models/user');
+const ChatRoom = require('../models/chatRoom');
 const authMiddleware = require('../middleware/auth');
 
 router.post('/login', async (req, res) => {
@@ -49,16 +50,32 @@ router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   console.log('register request ' + email + " - " + password);
   if (!dataValidation.isArrayHasBlankOrNullElement([name, email, password])) {
-    const isExist = await User.exists({ email: email });
-    if (isExist) {
+    const isExistEmail = await User.exists({ email: email });
+    const isExistName = await User.exists({ name: name });
+    if (isExistEmail) {
       return res.send({
         status: 0,
         message: 'This email already in use'
       })
     }
+    if (isExistName) {
+      return res.send({
+        status: 0,
+        message: 'This name already in use'
+      })
+    }
 
     const encrypted_password = await security.encryptPassword(password);
     const user = await User.create({ name, email, encrypted_password });
+
+    const generalRoom = await ChatRoom.findOne({ name: 'General' });
+    if (generalRoom) generalRoom.approvedParticipants.push(user._id);
+    await ChatRoom.findOneAndUpdate({name: 'General'}, { approvedParticipants: generalRoom.approvedParticipants });
+
+    const notificationRoom = await ChatRoom.findOne({ name: 'Notification' });
+    if (notificationRoom) notificationRoom.approvedParticipants.push(user._id);
+    await ChatRoom.findOneAndUpdate({ name: 'Notification'}, { approvedParticipants: notificationRoom.approvedParticipants });
+
     const newAT = security.generateAccessToken(user);
     const newRT = security.generateRefreshToken(user);
     return res.send({
