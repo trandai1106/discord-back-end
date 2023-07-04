@@ -248,6 +248,15 @@ const socket = (() => {
                     });
                 });
 
+                // socket.on('join-room', (roomId, userId) => {
+                //     socket.join(roomId)
+                //     io.to(roomId).broadcast.emit('user-connected', userId)
+
+                //     socket.on('disconnect', () => {
+                //         io.to(roomId).broadcast.emit('user-disconnected', userId)
+                //     })
+                // });
+
                 socket.on('checkOnlineUserList', (userId) => {
                     const receiverPair = pairIDs.find(pair => pair.id == userId);
                     if (receiverPair) {
