@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const DirectMessageSchema = new Schema({
+const ChannelMessageSchema = new Schema({
   from_id: {
     type: String,
     required: true,
   },
-  to_id: {
+  room_id: {
     type: String,
     required: true,
   },
@@ -21,4 +21,4 @@ const DirectMessageSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("DirectMessage", DirectMessageSchema);
+module.exports = mongoose.model("ChannelMessage", ChannelMessageSchema);
