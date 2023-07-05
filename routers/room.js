@@ -245,33 +245,37 @@ router.post("/users/add/:roomId", async (req, res) => {
   }
 });
 
-router.delete("/users/delete/:roomId", async (req, res) => {
+router.post("/users/delete/:roomId", async (req, res) => {
   try {
     const roomId = req.params.roomId;
     const userId = req.body.userId;
 
     const chatRoom = await ChatRoom.findById(roomId);
+    console.log(userId, roomId);
 
-    if (chatRoom.members.includes(userId)) {
+    if (!chatRoom.members.includes(userId)) {
       return res.send({
         status: 0,
         message: "Error: User not a member",
       });
     }
 
+    const result = await ChatRoom.findByIdAndUpdate(roomId, {
+      $pull: { members: userId },
+    });
+
     res.send({
       status: 1,
       message: "Delete member successful",
+      data: result,
     });
   } catch (err) {
     res.send({
       status: 0,
-      message: "Error Delete member",
+      message: "Error delete member",
     });
   }
-});
-
-////////////////////////////////
+}); /////////////////////////////
 
 // // Route để tạo phòng chat mới
 // router.post("/", authMiddleware.requireLogin, async (req, res) => {
