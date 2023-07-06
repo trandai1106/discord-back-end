@@ -8,15 +8,13 @@ const ChannelMessage = require("../models/channelMessage");
 // Get all channel messages
 router.get("/:channelId", async (req, res) => {
   const messages = await ChannelMessage.find({
-    channelId: req.params.channelId,
+    channel_id: req.params.channelId,
   });
   messages.sort((m1, m2) => m1.created_at - m2.created_at);
   res.send({
     status: 1,
     message: "Get room messages successful",
-    data: {
-      messages: messages,
-    },
+    data: messages,
   });
 });
 

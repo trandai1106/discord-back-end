@@ -91,7 +91,7 @@ router.post("/create", async (req, res) => {
 // Delete channel
 router.post("/delete", authMiddleware.requireLogin, async (req, res) => {
   try {
-    const roomdId = req.body.channelId;
+    const channelId = req.body.channelId;
 
     const messages = await ChannelMessage.find({
       channelId: req.params.channelId,
@@ -101,7 +101,7 @@ router.post("/delete", authMiddleware.requireLogin, async (req, res) => {
       ChannelMessage.findByIdAndDelete(message._id);
     });
 
-    const result = await Channel.findByIdAndDelete(roomdId);
+    const result = await Channel.findByIdAndDelete(channelId);
 
     res.send({
       status: 1,

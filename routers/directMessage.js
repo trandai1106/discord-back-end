@@ -18,9 +18,7 @@ router.get("/to/:to_id", authMiddleware.requireLogin, async (req, res) => {
   res.send({
     status: 1,
     message: "Get direct messages two people successful",
-    data: {
-      messages: messages,
-    },
+    data: messages,
   });
 });
 
@@ -32,9 +30,7 @@ router.get("/", authMiddleware.requireLogin, async (req, res) => {
   res.send({
     status: 1,
     message: "Get direct messages history successful",
-    data: {
-      messages: messages,
-    },
+    data: messages,
   });
 });
 
@@ -97,9 +93,7 @@ router.get("/contacted", authMiddleware.requireLogin, async (req, res) => {
   res.send({
     status: 1,
     message: "Get messages history successful",
-    data: {
-      contacted_data: data,
-    },
+    data: data,
   });
 });
 

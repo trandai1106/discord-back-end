@@ -6,11 +6,11 @@ const ChannelMessageSchema = new Schema({
     type: String,
     required: true,
   },
-  room_id: {
+  channel_id: {
     type: String,
     required: true,
   },
-  message: {
+  content: {
     type: String,
     required: true,
   },
