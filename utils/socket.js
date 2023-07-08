@@ -36,7 +36,7 @@ const socket = (() => {
             }
 
             io.emit(
-              "update_online",
+              "update_online_user",
               pairIDs.map((pairID) => pairID.id)
             );
 
@@ -112,19 +112,21 @@ const socket = (() => {
         });
 
         socket.on("deleteChannelMessage", (data) => {
-          try {
-            // Find all socket ID of users
-            if (pairIDs === null) {
-              return;
-            }
-            pairIDs.forEach((pair) => {
-              pair.socketIDs.forEach((socketID) => {
-                if (pair.id !== data.from_id) {
-                  io.to(socketID).emit("deleteChannelMessage", data);
-                }
-              });
+          // Find all socket ID of users
+          if (pairIDs === null) {
+            return;
+          }
+          pairIDs.forEach((pair) => {
+            pair.socketIDs.forEach((socketID) => {
+              if (pair.id !== data.from_id) {
+                io.to(socketID).emit("deleteChannelMessage", data);
+              }
             });
-          } catch {}
+          });
+        });
+
+        socket.on("update_channel", () => {
+          io.emit("update_channel");
         });
 
         socket.on("directCall", (data) => {
@@ -175,25 +177,11 @@ const socket = (() => {
           });
         });
 
-        // socket.on('join-channel', (channelId, userId) => {
-        //     socket.join(channelId)
-        //     io.to(channelId).broadcast.emit('user-connected', userId)
-
-        //     socket.on('disconnect', () => {
-        //         io.to(channelId).broadcast.emit('user-disconnected', userId)
-        //     })
-        // });
-
         socket.on("check_online_user", (userId) => {
-          const receiverPair = pairIDs.find((pair) => pair.id == userId);
-          if (receiverPair) {
-            receiverPair.socketIDs.forEach((socketID) => {
-              io.to(socketID).emit(
-                "update_online_user",
-                pairIDs.map((pairID) => pairID.id)
-              );
-            });
-          }
+          io.emit(
+            "update_online_user",
+            pairIDs.map((pairID) => pairID.id)
+          );
         });
 
         socket.on("disconnect", async () => {
@@ -223,7 +211,7 @@ const socket = (() => {
           }
 
           io.emit(
-            "update_online",
+            "update_online_user",
             pairIDs.map((pairID) => pairID.id)
           );
 

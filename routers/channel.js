@@ -23,13 +23,33 @@ router.get("/joined", authMiddleware.requireLogin, async (req, res) => {
   }
 });
 
+// Get all public channels
+router.get("/all", authMiddleware.requireLogin, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await Channel.find({
+      $or: [{ members: { $in: [userId] } }, { private: false }],
+    });
+
+    res.send({
+      status: 1,
+      message: "Get channel information successfull",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to fetch chat channel" });
+  }
+});
+
 router.get("/all", async (req, res) => {
   try {
     const result = await Channel.find();
     res.send({
       status: 1,
       message: "Get channel information successfull",
-      data: result,
+      data: result.filter((channel) => channel.private === false),
     });
   } catch (error) {
     console.log(error);
@@ -54,7 +74,7 @@ router.get("/information/:channelId", async (req, res) => {
 // Create channel
 router.post("/create", async (req, res) => {
   try {
-    const { admin, name } = req.body;
+    const { admin, name, private } = req.body;
 
     if (name.trim() === "" || name === null) {
       return res.send({
@@ -75,6 +95,7 @@ router.post("/create", async (req, res) => {
       name,
       members: [admin],
       admin: admin,
+      private: private,
     });
 
     res.send({
@@ -88,18 +109,41 @@ router.post("/create", async (req, res) => {
   }
 });
 
+// Create channel
+router.put("/update", async (req, res) => {
+  try {
+    const { channelId, admin, name, private } = req.body;
+
+    if (name.trim() === "" || name === null) {
+      return res.send({
+        status: 0,
+        message: "Channel name cannot be empty",
+      });
+    }
+
+    const result = await Channel.findByIdAndUpdate(channelId, {
+      name: name,
+      admin: admin,
+      private: private,
+    });
+
+    res.send({
+      status: 1,
+      message: "Update channel successful",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ status: 0, message: "Failed to update channel" });
+  }
+});
+
 // Delete channel
 router.post("/delete", authMiddleware.requireLogin, async (req, res) => {
   try {
     const channelId = req.body.channelId;
 
-    const messages = await ChannelMessage.find({
-      channelId: req.params.channelId,
-    });
-
-    messages.forEach((message) => {
-      ChannelMessage.findByIdAndDelete(message._id);
-    });
+    await ChannelMessage.deleteMany({ channelId: channelId });
 
     const result = await Channel.findByIdAndDelete(channelId);
 
@@ -157,6 +201,31 @@ router.get("/notmember/:channelId", async (req, res) => {
       status: 0,
       message: "Error get users",
     });
+  }
+});
+
+// Search channel by name
+router.get("/search/channel", authMiddleware.requireLogin, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const query = req.query.q;
+
+    const result = await Channel.find({
+      $and: [
+        {
+          $or: [{ members: { $in: [userId] } }, { private: false }],
+        },
+        { name: new RegExp(query, "i") },
+      ],
+    });
+
+    res.send({
+      status: 1,
+      message: "Search channels successful",
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to search channels" });
   }
 });
 

@@ -3,35 +3,64 @@ const router = require("express").Router();
 const authMiddleware = require("../middleware/auth");
 const User = require("../models/user");
 const DirectMessage = require("../models/directMessage");
+const directMessage = require("../models/directMessage");
 
 router.get("/to/:to_id", authMiddleware.requireLogin, async (req, res) => {
-  const messages_from_user = await DirectMessage.find({
-    from_id: req.params.to_id,
-    to_id: req.user._id,
-  });
-  const messages_to_user = await DirectMessage.find({
-    from_id: req.user._id,
-    to_id: req.params.to_id,
-  });
-  var messages = messages_from_user.concat(messages_to_user);
-  messages.sort((m1, m2) => m1.created_at - m2.created_at);
-  res.send({
-    status: 1,
-    message: "Get direct messages two people successful",
-    data: messages,
-  });
+  try {
+    const userId = req.user.id;
+    const to_id = req.params.to_id;
+
+    const messages = await directMessage.find({
+      $or: [
+        { from_id: userId, to_id: to_id },
+        { from_id: to_id, to_id: userId },
+      ],
+    });
+    messages.sort((m1, m2) => m1.created_at - m2.created_at);
+    res.send({
+      status: 1,
+      message: "Get direct messages two people successful",
+      data: messages,
+    });
+  } catch (err) {
+    res.send({
+      status: 0,
+      message: "Error while getting messages",
+      data: err,
+    });
+  }
 });
 
-router.get("/", authMiddleware.requireLogin, async (req, res) => {
-  const messages_received = await DirectMessage.find({ to_id: req.user._id });
-  const messages_sent = await DirectMessage.find({ from_id: req.user._id });
-  var messages = messages_received.concat(messages_sent);
-  messages.sort((m1, m2) => m1.created_at - m2.created_at);
-  res.send({
-    status: 1,
-    message: "Get direct messages history successful",
-    data: messages,
-  });
+// Get message by content
+router.post("/search", async (req, res) => {
+  try {
+    const from_id = req.body.from_id;
+    const to_id = req.body.to_id;
+    const query = req.query.q;
+
+    console.log(from_id, to_id, query);
+
+    const messages = await directMessage.find({
+      $or: [
+        { from_id: from_id, to_id: to_id },
+        { from_id: to_id, to_id: from_id },
+      ],
+      content: new RegExp(query, "i"),
+    });
+    messages.sort((m1, m2) => m1.created_at - m2.created_at);
+
+    res.send({
+      status: 1,
+      message: "Search channel messages successful",
+      data: messages,
+    });
+  } catch (err) {
+    res.send({
+      status: 0,
+      message: "Error while getting messages",
+      data: err,
+    });
+  }
 });
 
 router.get("/contacted", authMiddleware.requireLogin, async (req, res) => {
