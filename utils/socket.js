@@ -85,7 +85,13 @@ const socket = (() => {
             content: data.content,
           });
 
-          io.emit("s_directMessage", newMessage);
+          pairIDs.forEach((pair) => {
+            pair.socketIDs.forEach((socketID) => {
+              if (pair.id === data.to_id || pair.id === data.from_id) {
+                io.to(socketID).emit("s_directMessage", newMessage);
+              }
+            });
+          });
         });
 
         socket.on("c_ChannelMessage", async (data) => {
@@ -95,7 +101,15 @@ const socket = (() => {
             content: data.content,
           });
 
-          io.emit("s_ChannelMessage", newMessage);
+          const channel = await Channel.findById(data.channel_id);
+
+          pairIDs.forEach((pair) => {
+            pair.socketIDs.forEach((socketID) => {
+              if (channel.members.includes(pair.id)) {
+                io.to(socketID).emit("s_ChannelMessage", newMessage);
+              }
+            });
+          });
         });
 
         socket.on("deleteDirectMessage", (data) => {
@@ -111,14 +125,17 @@ const socket = (() => {
           } catch {}
         });
 
-        socket.on("deleteChannelMessage", (data) => {
+        socket.on("deleteChannelMessage", async (data) => {
           // Find all socket ID of users
           if (pairIDs === null) {
             return;
           }
+
+          const channel = await Channel.findById(data.channel_id);
+
           pairIDs.forEach((pair) => {
             pair.socketIDs.forEach((socketID) => {
-              if (pair.id !== data.from_id) {
+              if (channel.members.includes(pair.id)) {
                 io.to(socketID).emit("deleteChannelMessage", data);
               }
             });
@@ -129,28 +146,29 @@ const socket = (() => {
           io.emit("update_channel");
         });
 
-        socket.on("directCall", (data) => {
-          try {
-            const receiverPair = pairIDs.find((pair) => pair.id == data.to_id);
-            if (receiverPair == null) {
-              console.log("Receiver is not online");
-            } else {
-              receiverPair.socketIDs.forEach((socketID) => {
-                io.to(socketID).emit("directCall", data);
-              });
-            }
-          } catch {
-            // const fromSocketId = pairIDs.filter(pairID => pairID.id === from_id)[0].socketIDs[0];
-            // socket.to(fromSocketId).emit("offiline", data);
-          }
+        socket.on("direct_call", async (data) => {
+          pairIDs.forEach((pair) => {
+            pair.socketIDs.forEach((socketID) => {
+              if (pair.id === data.to_id) {
+                io.to(socketID).emit("direct_call", data);
+              }
+            });
+          });
         });
 
-        socket.on("channelCall", (data) => {
-          try {
-            pairIDs.forEach((pair) => {
-              io.to(pair.socketIDs).emit("channelCall", data);
+        socket.on("channel_call", async (data) => {
+          const channel = await Channel.findById(data.channel_id);
+
+          pairIDs.forEach((pair) => {
+            pair.socketIDs.forEach((socketID) => {
+              if (
+                channel.members.includes(pair.id) &&
+                pair.id !== data.from_id
+              ) {
+                io.to(socketID).emit("channel_call", data);
+              }
             });
-          } catch {}
+          });
         });
 
         socket.on("rejectCall", (data) => {
@@ -245,9 +263,9 @@ const authenticate = async (token) => {
   if (decodedToken.status == 403) {
     return null;
   } else if (decodedToken.status == 200) {
-    const userExist = await User.exists({ name: decodedToken.data.name });
+    const userExist = await User.exists({ _id: decodedToken.data._id });
     if (userExist) {
-      const user = await User.findOne({ name: decodedToken.data.name });
+      const user = await User.findById(decodedToken.data._id);
       return user;
     } else {
       return null;

@@ -1,8 +1,10 @@
 const router = require("express").Router();
+const uuid4 = require("uuid4");
 
 const authMiddleware = require("../middleware/auth");
 const User = require("../models/user");
 const DirectMessage = require("../models/directMessage");
+const ChannelMessage = require("../models/channelMessage");
 const Image = require("../models/image");
 const multer = require("multer");
 
@@ -69,25 +71,22 @@ router.get("/information/:userId", async (req, res) => {
 // Update user information
 router.put("/update/:userId", async (req, res) => {
   try {
-    const { name, email } = req.body;
+    // const { name, email } = req.body;
+    const name = req.body.name;
     const userId = req.params.userId;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).send({
-        status: 0,
-        message: "User not found",
-      });
-    }
-    if (name) user.name = name;
-    if (email) user.email = email;
-    await user.save();
+    console.log(name, userId);
+
+    const user = await User.findByIdAndUpdate(userId, {
+      name: name,
+    });
+
     res.send({
       status: 1,
       message: "User information updated successfully",
       data: {
         email: user.email,
-        name: user.name,
+        name: name,
         id: user._id,
         avatar: user.avatar_url,
       },
@@ -113,27 +112,34 @@ router.post("/avatar/:userId", upload.single("file"), async (req, res) => {
     }
 
     const imageData = req.file.buffer.toString("base64");
-    const existingImage = await Image.findOne({ name: userId });
+    const existingImage = await Image.findOne({ user: userId });
 
     if (existingImage) {
-      existingImage.data = imageData;
-      await existingImage.save();
+      await Image.findOneAndUpdate(
+        { user: userId },
+        {
+          data: imageData,
+        }
+      );
+
+      res.send({
+        status: 1,
+        message: "Image uploaded successfully",
+      });
     } else {
-      console.log("new image");
-      const user = await User.findByIdAndUpdate(userId, {
+      await User.findByIdAndUpdate(userId, {
         avatar_url: "/users/images/" + userId,
       });
-      const newImage = new Image({
-        name: userId,
+      await Image.create({
+        user: userId,
         data: imageData,
       });
-      await newImage.save();
-    }
 
-    res.send({
-      status: 1,
-      message: "Image uploaded successfully",
-    });
+      res.send({
+        status: 1,
+        message: "Image uploaded successfully",
+      });
+    }
   } catch (error) {
     res.status(500).send({
       status: 0,
@@ -156,7 +162,7 @@ router.get("/images/:id", async (req, res) => {
   try {
     const id = req.params.id;
 
-    const image = await Image.findOne({ name: id });
+    const image = await Image.findOne({ user: id });
 
     if (!image) {
       return res.status(404).send({
@@ -177,7 +183,7 @@ router.get("/images/:id", async (req, res) => {
 });
 
 router.delete("/images/:id", async (req, res) => {
-  Image.findOneAndDelete({ name: req.params.id })
+  Image.findOneAndDelete({ user: req.params.id })
     .then((data) => res.send("delete successfuly"))
     .catch((error) => res.status(500).send("Error deleting image"));
 });
@@ -190,7 +196,7 @@ router.delete("/delete/:id", (req, res) => {
         $or: [{ from_id: req.params.id }, { to_id: req.params.id }],
       })
         .then(() => {
-          RoomMessage.deleteMany({
+          ChannelMessage.deleteMany({
             from_id: req.params.id,
           })
             .then(() => {
