@@ -110,7 +110,7 @@ router.post("/create", async (req, res) => {
 });
 
 // Create channel
-router.put("/update", async (req, res) => {
+router.put("/admin/update", async (req, res) => {
   try {
     const { channelId, admin, name, private } = req.body;
 
@@ -139,7 +139,7 @@ router.put("/update", async (req, res) => {
 });
 
 // Delete channel
-router.post("/delete", authMiddleware.requireLogin, async (req, res) => {
+router.post("/admin/delete", async (req, res) => {
   try {
     const channelId = req.body.channelId;
 

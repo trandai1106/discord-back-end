@@ -43,19 +43,26 @@ router.get("/all", (req, res) => {
 });
 
 router.get("/information/:userId", async (req, res) => {
-  var user = await User.findById(req.params.userId);
-  if (user) {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (user) {
+      res.send({
+        status: 1,
+        message: "Get user information successful",
+        data: {
+          email: user.email,
+          name: user.name,
+          id: user._id,
+          avatar: user.avatar_url,
+        },
+      });
+    } else {
+    }
+  } catch (err) {
     res.send({
-      status: 1,
-      message: "Get user information successful",
-      data: {
-        email: user.email,
-        name: user.name,
-        id: user._id,
-        avatar: user.avatar_url,
-      },
+      status: 0,
+      message: "Error while getting user information",
     });
-  } else {
   }
 });
 
@@ -64,8 +71,7 @@ router.put("/update/:userId", async (req, res) => {
   try {
     const { name, email } = req.body;
     const userId = req.params.userId;
-    console.log(name, email, userId);
-    
+
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).send({
@@ -87,7 +93,6 @@ router.put("/update/:userId", async (req, res) => {
       },
     });
   } catch (err) {
-    console.log(err);
     res.send({
       status: 0,
       message: "Error while updating user information",
@@ -130,7 +135,6 @@ router.post("/avatar/:userId", upload.single("file"), async (req, res) => {
       message: "Image uploaded successfully",
     });
   } catch (error) {
-    console.error(error);
     res.status(500).send({
       status: 0,
       message: "Error while uploading image",
@@ -165,7 +169,6 @@ router.get("/images/:id", async (req, res) => {
     res.set("Content-Type", "image/jpeg");
     res.send(imageData);
   } catch (error) {
-    console.error(error);
     res.status(500).send({
       status: 0,
       message: "Get image fail",
