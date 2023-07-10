@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Video Call</title>
+    <link rel="stylesheet" href="font-awesome-4.6.3/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="../main.css" type="text/css" />
+    <script type="text/javascript">
+      var roomID = "<%= RoomId %>";
+    </script>
+    <script
+      src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"
+      defer
+    ></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/peerjs@1.3.2/dist/peerjs.min.js" defer></script> -->
+    <script src="../socket.io/socket.io.js" defer></script>
+    <script src="../index.js" charset="utf-8" defer></script>
+  </head>
+  <body>
+    <div id="videoDiv"></div>
+    <div class="actions-container">
+      <div class="actions">
+        <div class="action" id="video-btn">
+          video
+        </div>
+        <div class="action" id="mic-btn">
+          mic
+        </div>
+        <div class="action" id="screen-btn">
+          screen
+        </div>
+        <div class="action" id="out-btn">
+          out
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
